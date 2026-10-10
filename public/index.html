@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TaskFlow – Collaborative Project Management Tool | CodeAlpha Task 3. Plan. Collaborate. Complete.">
+  <title>TaskFlow &ndash; Collaborative Project Management Tool</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- ==========================================
+       AUTHENTICATION OVERLAY
+       ========================================== -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-container">
+      <div class="auth-brand">
+        <div class="logo-icon">⚡</div>
+        <h1 class="brand-title">TaskFlow</h1>
+        <p class="brand-tagline">Plan. Collaborate. Complete.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="tab-login-btn" class="auth-tab-btn active">Sign In</button>
+        <button id="tab-register-btn" class="auth-tab-btn">Register</button>
+      </div>
+
+      <!-- Login Form Card -->
+      <div id="login-card">
+        <div id="login-error" class="auth-error hidden"></div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-identifier">Email or Username</label>
+            <input type="text" id="login-identifier" class="form-control" placeholder="demo@taskflow.com" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          </div>
+          <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+            Sign In
+          </button>
+        </form>
+
+        <!-- Quick 1-Click Demo Login Personas -->
+        <div class="demo-users-box">
+          <div class="demo-title">⚡ 1-Click Demo Personas (CodeAlpha)</div>
+          <div class="demo-buttons-grid">
+            <button class="btn-demo-user" data-demo-user="demo" data-demo-email="demo@taskflow.com" data-demo-password="Demo123">
+              👑 Demo User (Lead)
+            </button>
+            <button class="btn-demo-user" data-demo-user="sarah" data-demo-email="sarah@taskflow.com" data-demo-password="Demo123">
+              💻 Sarah (Frontend)
+            </button>
+            <button class="btn-demo-user" data-demo-user="alex" data-demo-email="alex@taskflow.com" data-demo-password="Demo123">
+              ⚙️ Alex (Backend)
+            </button>
+            <button class="btn-demo-user" data-demo-user="elena" data-demo-email="elena@taskflow.com" data-demo-password="Demo123">
+              🎨 Elena (Designer)
+            </button>
+            <button class="btn-demo-user" data-demo-user="david" data-demo-email="david@taskflow.com" data-demo-password="Demo123" style="grid-column: span 2;">
+              🧪 David (QA Tester)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Register Form Card -->
+      <div id="register-card" class="hidden">
+        <div id="register-error" class="auth-error hidden"></div>
+        <form id="register-form">
+          <div class="form-group">
+            <label for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" class="form-control" placeholder="Akash D M" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reg-username">Username</label>
+              <input type="text" id="reg-username" class="form-control" placeholder="akash17" required>
+            </div>
+            <div class="form-group">
+              <label for="reg-email">Email</label>
+              <input type="email" id="reg-email" class="form-control" placeholder="akash@example.com" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reg-password">Password</label>
+              <input type="password" id="reg-password" class="form-control" placeholder="Min 6 chars" required>
+            </div>
+            <div class="form-group">
+              <label for="reg-confirm-password">Confirm</label>
+              <input type="password" id="reg-confirm-password" class="form-control" placeholder="Repeat" required>
+            </div>
+          </div>
+          <button type="submit" id="register-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+            Create Account
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MAIN APPLICATION SHELL
+       ========================================== -->
+  <div id="app-shell" class="blurred">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">⚡</div>
+        <div class="brand-wrap">
+          <span class="brand-title">TaskFlow</span>
+          <span class="brand-tagline">Plan &bull; Collaborate &bull; Complete</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Navigation</div>
+        <a href="#" class="sidebar-nav-item active" data-view-target="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-nav-item" data-view-target="projects">
+          <span class="nav-icon">📁</span>
+          <span>Projects</span>
+        </a>
+        <a href="#" class="sidebar-nav-item" data-view-target="tasks">
+          <span class="nav-icon">📋</span>
+          <span>My Tasks</span>
+        </a>
+        <a href="#" class="sidebar-nav-item" data-view-target="members">
+          <span class="nav-icon">👥</span>
+          <span>Team Directory</span>
+        </a>
+
+        <div class="nav-section-title" style="margin-top: 14px;">Actions</div>
+        <button class="btn btn-primary btn-sm btn-open-create-project" style="margin: 4px 10px;">
+          + New Project
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <img src="" alt="Avatar" class="avatar avatar-sm user-avatar-img hidden">
+          <span class="avatar avatar-sm avatar-fallback user-avatar-initials">U</span>
+          <div class="user-snippet-info">
+            <div class="user-display-name">Loading...</div>
+            <div class="user-display-email">demo@taskflow.com</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-wrapper">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle Sidebar">☰</button>
+          <div class="global-search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="global-search-input" class="global-search-input" placeholder="Search projects, tasks...">
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Socket Live Status Pill -->
+          <div id="socket-status-badge" class="status-indicator live" title="Real-time WebSockets Connected">
+            <span class="status-dot"></span>
+            <span>Live Sync</span>
+          </div>
+
+          <!-- Notification Bell -->
+          <div style="position: relative;">
+            <button id="notification-bell-btn" class="notification-bell-btn" aria-label="Notifications">
+              🔔
+              <span id="notification-unread-count" class="badge-unread hidden">0</span>
+            </button>
+            
+            <!-- Notification Dropdown -->
+            <div id="notification-dropdown" class="notification-dropdown hidden">
+              <div class="notification-header">
+                <span class="notification-title">Notifications</span>
+                <button id="mark-all-read-btn" class="btn-link">Mark all as read</button>
+              </div>
+              <div id="notification-items-list" class="notification-items-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- User Menu Dropdown -->
+          <div style="position: relative;">
+            <button id="user-menu-btn" class="user-menu-btn" aria-label="User Menu">
+              <img src="" alt="Avatar" class="avatar avatar-md user-avatar-img hidden">
+              <span class="avatar avatar-md avatar-fallback user-avatar-initials">U</span>
+            </button>
+            <div id="user-menu-dropdown" class="user-menu-dropdown hidden">
+              <button id="profile-menu-item" class="menu-item">👤 Edit Profile</button>
+              <button id="logout-btn" class="menu-item danger">🚪 Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIEW PANELS -->
+      <main class="content-body">
+        
+        <!-- ==========================================
+             VIEW 1: DASHBOARD
+             ========================================== -->
+        <section id="view-dashboard" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h2 class="view-title">Welcome back, <span class="user-display-name">Team</span> 👋</h2>
+              <p class="view-subtitle">Track project progress, collaborate with members, and stay synchronized in real-time.</p>
+            </div>
+            <button class="btn btn-primary btn-open-create-project">+ New Project</button>
+          </div>
+
+          <!-- Stat Cards Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon purple">📁</div>
+              <div>
+                <div id="stat-total-projects" class="stat-value">0</div>
+                <div class="stat-label">Active Projects</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon cyan">📋</div>
+              <div>
+                <div id="stat-my-tasks" class="stat-value">0</div>
+                <div class="stat-label">Tasks Assigned to Me</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon amber">⏳</div>
+              <div>
+                <div id="stat-active-tasks" class="stat-value">0</div>
+                <div class="stat-label">In-Progress Tasks</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon emerald">✅</div>
+              <div>
+                <div id="stat-completed-tasks" class="stat-value">0</div>
+                <div class="stat-label">Completed Tasks</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard Split Section -->
+          <div class="dashboard-split">
+            <div class="section-box">
+              <div class="section-header">
+                <h3 class="section-title">Projects Overview</h3>
+                <a href="#" class="btn-link" onclick="App.switchView('projects')">View All &rarr;</a>
+              </div>
+              <div id="dashboard-projects-container" class="projects-grid" style="grid-template-columns: 1fr;">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+
+            <div class="section-box">
+              <div class="section-header">
+                <h3 class="section-title">Recent Tasks &amp; Updates</h3>
+                <a href="#" class="btn-link" onclick="App.switchView('tasks')">View All &rarr;</a>
+              </div>
+              <div id="dashboard-tasks-container" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 2: PROJECTS
+             ========================================== -->
+        <section id="view-projects" class="view-panel hidden">
+          <div class="view-header">
+            <div>
+              <h2 class="view-title">Projects</h2>
+              <p class="view-subtitle">Organize and supervise group projects and collaborative boards.</p>
+            </div>
+            <button class="btn btn-primary btn-open-create-project">+ New Project</button>
+          </div>
+
+          <div id="projects-grid" class="projects-grid">
+            <!-- Populated via JS -->
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 3: KANBAN PROJECT BOARD
+             ========================================== -->
+        <section id="view-board" class="view-panel hidden">
+          <!-- Board Top Bar -->
+          <div class="board-header-bar">
+            <div class="board-info-left">
+              <h2 id="board-project-name" class="board-project-title">Project Board</h2>
+              <p id="board-project-desc" class="board-project-desc"></p>
+            </div>
+
+            <div class="board-controls-right">
+              <!-- Progress Indicator -->
+              <div class="board-progress-box">
+                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+                  <span>PROGRESS</span>
+                  <span id="board-progress-text">0%</span>
+                </div>
+                <div class="board-progress-track">
+                  <div id="board-progress-fill" class="board-progress-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <!-- Members Avatar Stack -->
+              <div id="board-members-stack" class="avatar-stack">
+                <!-- Populated via JS -->
+              </div>
+
+              <!-- Action Buttons -->
+              <button id="btn-manage-members" class="btn btn-secondary btn-sm">👥 Members</button>
+              <button class="btn btn-primary btn-sm btn-open-create-task">+ Add Task</button>
+            </div>
+          </div>
+
+          <!-- 4 Kanban Columns -->
+          <div class="kanban-grid">
+            
+            <!-- Column 1: To Do -->
+            <div class="kanban-column" id="kanban-col-todo" data-status="todo">
+              <div class="kanban-col-header">
+                <div class="col-title-wrap">
+                  <span class="col-title">To Do</span>
+                  <span id="col-count-todo" class="col-count-badge">0</span>
+                </div>
+                <button class="btn-add-task-col btn-open-create-task" data-status="todo" title="Add Task in To Do">+</button>
+              </div>
+              <div class="kanban-tasks-list" id="kanban-list-todo"></div>
+            </div>
+
+            <!-- Column 2: In Progress -->
+            <div class="kanban-column" id="kanban-col-in-progress" data-status="in-progress">
+              <div class="kanban-col-header">
+                <div class="col-title-wrap">
+                  <span class="col-title">In Progress</span>
+                  <span id="col-count-in-progress" class="col-count-badge">0</span>
+                </div>
+                <button class="btn-add-task-col btn-open-create-task" data-status="in-progress" title="Add Task in Progress">+</button>
+              </div>
+              <div class="kanban-tasks-list" id="kanban-list-in-progress"></div>
+            </div>
+
+            <!-- Column 3: In Review -->
+            <div class="kanban-column" id="kanban-col-in-review" data-status="in-review">
+              <div class="kanban-col-header">
+                <div class="col-title-wrap">
+                  <span class="col-title">In Review</span>
+                  <span id="col-count-in-review" class="col-count-badge">0</span>
+                </div>
+                <button class="btn-add-task-col btn-open-create-task" data-status="in-review" title="Add Task in Review">+</button>
+              </div>
+              <div class="kanban-tasks-list" id="kanban-list-in-review"></div>
+            </div>
+
+            <!-- Column 4: Completed -->
+            <div class="kanban-column" id="kanban-col-completed" data-status="completed">
+              <div class="kanban-col-header">
+                <div class="col-title-wrap">
+                  <span class="col-title">Completed</span>
+                  <span id="col-count-completed" class="col-count-badge">0</span>
+                </div>
+                <button class="btn-add-task-col btn-open-create-task" data-status="completed" title="Add Completed Task">+</button>
+              </div>
+              <div class="kanban-tasks-list" id="kanban-list-completed"></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 4: ALL TASKS (MY TASKS)
+             ========================================== -->
+        <section id="view-tasks" class="view-panel hidden">
+          <div class="view-header">
+            <div>
+              <h2 class="view-title">My Tasks &amp; Team Workload</h2>
+              <p class="view-subtitle">Consolidated view of all assignments across projects.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm active" data-task-filter="all">All</button>
+              <button class="btn btn-secondary btn-sm" data-task-filter="assigned">Assigned to Me</button>
+              <button class="btn btn-secondary btn-sm" data-task-filter="urgent">Urgent / High</button>
+              <button class="btn btn-secondary btn-sm" data-task-filter="completed">Completed</button>
+            </div>
+          </div>
+
+          <div id="all-tasks-table-container">
+            <!-- Populated via JS -->
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 5: TEAM DIRECTORY
+             ========================================== -->
+        <section id="view-members" class="view-panel hidden">
+          <div class="view-header">
+            <div>
+              <h2 class="view-title">Team Directory</h2>
+              <p class="view-subtitle">Collaborators, roles, and profiles.</p>
+            </div>
+          </div>
+
+          <div id="members-directory-grid" class="members-grid">
+            <!-- Populated via JS -->
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 1: CREATE PROJECT
+       ========================================== -->
+  <div id="create-project-modal" class="modal-container hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Project</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="create-project-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="proj-name">Project Name *</label>
+            <input type="text" id="proj-name" class="form-control" placeholder="e.g. NextGen Web App" required>
+          </div>
+          <div class="form-group">
+            <label for="proj-desc">Description</label>
+            <textarea id="proj-desc" class="form-control" placeholder="Describe the objectives, deliverables, and team goals..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proj-color">Accent Color</label>
+              <input type="color" id="proj-color" class="form-control" value="#6366f1" style="height: 42px; padding: 4px;">
+            </div>
+            <div class="form-group">
+              <label for="proj-due-date">Target Due Date</label>
+              <input type="date" id="proj-due-date" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" id="create-project-submit-btn" class="btn btn-primary">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 2: CREATE TASK
+       ========================================== -->
+  <div id="create-task-modal" class="modal-container hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Task</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="create-task-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="task-title">Task Title *</label>
+            <input type="text" id="task-title" class="form-control" placeholder="e.g. Implement OAuth Flow" required>
+          </div>
+          <div class="form-group">
+            <label for="task-desc">Description</label>
+            <textarea id="task-desc" class="form-control" placeholder="Add acceptance criteria, technical requirements..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-priority">Priority</label>
+              <select id="task-priority" class="form-control">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="task-status">Status</label>
+              <select id="task-status" class="form-control">
+                <option value="todo">To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="in-review">In Review</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-assignee">Assign Member</label>
+              <select id="task-assignee" class="form-control">
+                <option value="">Unassigned</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="task-due-date">Due Date</label>
+              <input type="date" id="task-due-date" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" id="create-task-submit-btn" class="btn btn-primary">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 3: TASK DETAILS & REAL-TIME COMMENTS
+       ========================================== -->
+  <div id="task-detail-modal" class="modal-container hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box modal-box-lg">
+      <div class="modal-header">
+        <h3 id="task-detail-title" class="modal-title">Task Details</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="task-detail-grid">
+          
+          <!-- Left Column: Description & Comments -->
+          <div class="task-detail-left">
+            <div>
+              <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Description</h4>
+              <p id="task-detail-desc" class="task-detail-desc"></p>
+            </div>
+
+            <!-- Real-time Comments Thread -->
+            <div class="comments-section">
+              <h4 style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <span>💬 Discussion</span>
+              </h4>
+              <div id="task-comments-list" class="comments-list">
+                <!-- Dynamically populated -->
+              </div>
+
+              <!-- Add Comment Input Form -->
+              <form id="add-comment-form" class="add-comment-wrap">
+                <input type="text" id="comment-input" class="form-control" placeholder="Write a comment or update..." required autocomplete="off">
+                <button type="submit" class="btn btn-primary btn-sm">Post</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right Column: Meta Attributes & Controls -->
+          <div class="task-detail-right">
+            <div class="form-group">
+              <label>Status</label>
+              <select id="task-detail-status-select" class="form-control">
+                <option value="todo">To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="in-review">In Review</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Assignee</label>
+              <select id="task-detail-assign-select" class="form-control">
+                <option value="">Unassigned</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 11px; color: var(--text-dim); font-weight: 700;">PRIORITY</label>
+              <div style="margin-top: 4px;">
+                <span id="task-detail-priority" class="badge">Medium</span>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 11px; color: var(--text-dim); font-weight: 700;">DUE DATE</label>
+              <div id="task-detail-due" style="font-size: 13px; color: var(--text-main); margin-top: 4px;">-</div>
+            </div>
+
+            <div>
+              <label style="font-size: 11px; color: var(--text-dim); font-weight: 700;">CREATED BY</label>
+              <div id="task-detail-creator" style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">-</div>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+              <button id="delete-task-btn" class="btn btn-danger btn-sm" style="width: 100%;">
+                🗑️ Delete Task
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 4: MANAGE PROJECT MEMBERS
+       ========================================== -->
+  <div id="members-modal" class="modal-container hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Project Members</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Add Member Section -->
+        <form id="add-member-form" style="margin-bottom: 20px;">
+          <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Invite Team Member</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="select-new-member" class="form-control" required>
+              <option value="">Select a user...</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm" style="white-space: nowrap;">+ Add</button>
+          </div>
+        </form>
+
+        <h4 style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px;">Current Team</h4>
+        <div id="project-members-modal-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary modal-close-btn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 5: EDIT PROFILE
+       ========================================== -->
+  <div id="profile-modal" class="modal-container hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Your Profile</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="edit-profile-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="profile-name-input">Full Name</label>
+            <input type="text" id="profile-name-input" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="profile-bio-input">Bio / Role</label>
+            <textarea id="profile-bio-input" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="profile-image-input">Avatar Image URL</label>
+            <input type="url" id="profile-image-input" class="form-control" placeholder="https://example.com/photo.jpg">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" id="save-profile-btn" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       TOAST NOTIFICATIONS CONTAINER
+       ========================================== -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- SCRIPTS -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/socket.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+
+</body>
+</html>
