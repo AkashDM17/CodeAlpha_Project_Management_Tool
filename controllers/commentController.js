@@ -3,6 +3,14 @@ const Task = require('../models/Task');
 const Project = require('../models/Project');
 const Notification = require('../models/Notification');
 
+const checkIsMember = (members, userId) => {
+  if (!members || !Array.isArray(members) || !userId) return false;
+  return members.some(m => {
+    const memberId = m.user?._id ? m.user._id.toString() : m.user?.toString();
+    return memberId === userId.toString();
+  });
+};
+
 /**
  * @desc    Get comments for a task
  * @route   GET /api/tasks/:taskId/comments
@@ -15,10 +23,7 @@ const getTaskComments = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Task not found.' });
     }
 
-    const isMember = task.project.members.some(
-      m => m.user.toString() === req.user._id.toString()
-    );
-    if (!isMember) {
+    if (!checkIsMember(task.project?.members, req.user._id)) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 
@@ -49,10 +54,7 @@ const addComment = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Task not found.' });
     }
 
-    const isMember = task.project.members.some(
-      m => m.user.toString() === req.user._id.toString()
-    );
-    if (!isMember) {
+    if (!checkIsMember(task.project?.members, req.user._id)) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 

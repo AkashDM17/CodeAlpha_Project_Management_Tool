@@ -4,12 +4,23 @@ const Notification = require('../models/Notification');
 const Comment = require('../models/Comment');
 
 /**
+ * Helper: Check if userId exists in project members array (handles populated or unpopulated)
+ */
+const checkIsMember = (members, userId) => {
+  if (!members || !Array.isArray(members) || !userId) return false;
+  return members.some(m => {
+    const memberId = m.user?._id ? m.user._id.toString() : m.user?.toString();
+    return memberId === userId.toString();
+  });
+};
+
+/**
  * Helper: Verify user is project member
  */
 const verifyMember = async (projectId, userId) => {
   const project = await Project.findById(projectId);
-  if (!project) return { project: null, isMember: false };
-  const member = project.members.some(m => m.user.toString() === userId.toString());
+  if (!project || !project.members) return { project: null, isMember: false };
+  const member = checkIsMember(project.members, userId);
   return { project, isMember: member };
 };
 
@@ -71,9 +82,7 @@ const getTask = async (req, res, next) => {
     if (!task) return res.status(404).json({ success: false, message: 'Task not found.' });
 
     // Check project membership
-    const isMemberCheck = task.project.members.some(
-      m => m.user.toString() === req.user._id.toString()
-    );
+    const isMemberCheck = checkIsMember(task.project.members, req.user._id);
     if (!isMemberCheck) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     const commentCount = await Comment.countDocuments({ task: task._id });
@@ -104,7 +113,7 @@ const createTask = async (req, res, next) => {
 
     // Validate assigned user is a project member
     if (assignedTo) {
-      const assignedIsMember = project.members.some(m => m.user.toString() === assignedTo.toString());
+      const assignedIsMember = checkIsMember(project.members, assignedTo);
       if (!assignedIsMember) {
         return res.status(400).json({ success: false, message: 'Assigned user is not a project member.' });
       }
@@ -174,9 +183,7 @@ const updateTask = async (req, res, next) => {
     const task = await Task.findById(req.params.id).populate('project', 'members owner');
     if (!task) return res.status(404).json({ success: false, message: 'Task not found.' });
 
-    const isMemberCheck = task.project.members.some(
-      m => m.user.toString() === req.user._id.toString()
-    );
+    const isMemberCheck = checkIsMember(task.project.members, req.user._id);
     if (!isMemberCheck) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     const { title, description, assignedTo, priority, status, dueDate } = req.body;
@@ -192,7 +199,7 @@ const updateTask = async (req, res, next) => {
 
     if (assignedTo !== undefined) {
       if (assignedTo) {
-        const isProjectMember = task.project.members.some(m => m.user.toString() === assignedTo.toString());
+        const isProjectMember = checkIsMember(task.project.members, assignedTo);
         if (!isProjectMember) {
           return res.status(400).json({ success: false, message: 'Assigned user is not a project member.' });
         }
@@ -261,9 +268,7 @@ const deleteTask = async (req, res, next) => {
     const task = await Task.findById(req.params.id).populate('project', 'members owner');
     if (!task) return res.status(404).json({ success: false, message: 'Task not found.' });
 
-    const isMemberCheck = task.project.members.some(
-      m => m.user.toString() === req.user._id.toString()
-    );
+    const isMemberCheck = checkIsMember(task.project.members, req.user._id);
     if (!isMemberCheck) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     await Comment.deleteMany({ task: task._id });
@@ -293,9 +298,7 @@ const updateTaskStatus = async (req, res, next) => {
     const task = await Task.findById(req.params.id).populate('project', 'members');
     if (!task) return res.status(404).json({ success: false, message: 'Task not found.' });
 
-    const isMemberCheck = task.project.members.some(
-      m => m.user.toString() === req.user._id.toString()
-    );
+    const isMemberCheck = checkIsMember(task.project.members, req.user._id);
     if (!isMemberCheck) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     const { status, position } = req.body;
@@ -357,14 +360,12 @@ const assignTask = async (req, res, next) => {
     const task = await Task.findById(req.params.id).populate('project', 'members');
     if (!task) return res.status(404).json({ success: false, message: 'Task not found.' });
 
-    const isMemberCheck = task.project.members.some(
-      m => m.user.toString() === req.user._id.toString()
-    );
+    const isMemberCheck = checkIsMember(task.project.members, req.user._id);
     if (!isMemberCheck) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     const { userId } = req.body;
     if (userId) {
-      const isProjectMember = task.project.members.some(m => m.user.toString() === userId.toString());
+      const isProjectMember = checkIsMember(task.project.members, userId);
       if (!isProjectMember) {
         return res.status(400).json({ success: false, message: 'User is not a project member.' });
       }

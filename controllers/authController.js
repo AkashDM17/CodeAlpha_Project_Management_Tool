@@ -19,11 +19,11 @@ const register = async (req, res, next) => {
     const { name, username, email, password, confirmPassword } = req.body;
 
     // Validation
-    if (!name || !username || !email || !password || !confirmPassword) {
-      return res.status(400).json({ success: false, message: 'All fields are required.' });
+    if (!name || !username || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Name, username, email, and password are required.' });
     }
 
-    if (password !== confirmPassword) {
+    if (confirmPassword && password !== confirmPassword) {
       return res.status(400).json({ success: false, message: 'Passwords do not match.' });
     }
 

@@ -7,14 +7,20 @@ const User = require('../models/User');
  * Helper: Check if user is a project member
  */
 const isMember = (project, userId) => {
-  return project.members.some(m => m.user.toString() === userId.toString());
+  if (!project || !project.members) return false;
+  return project.members.some(m => {
+    const memberId = m.user?._id ? m.user._id.toString() : m.user?.toString();
+    return memberId === userId.toString();
+  });
 };
 
 /**
  * Helper: Check if user is project owner
  */
 const isOwner = (project, userId) => {
-  return project.owner.toString() === userId.toString();
+  if (!project || !project.owner) return false;
+  const ownerId = project.owner?._id ? project.owner._id.toString() : project.owner?.toString();
+  return ownerId === userId.toString();
 };
 
 /**

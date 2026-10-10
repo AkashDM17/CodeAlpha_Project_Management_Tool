@@ -187,10 +187,34 @@ const App = {
       editTaskForm.addEventListener('submit', (e) => this.handleUpdateTask(e));
     }
 
+    // Open Edit Task Modal
+    const openEditTaskBtn = document.getElementById('btn-open-edit-task');
+    if (openEditTaskBtn) {
+      openEditTaskBtn.addEventListener('click', () => this.openEditTaskModal());
+    }
+
     // Delete Task Button
     const deleteTaskBtn = document.getElementById('delete-task-btn');
     if (deleteTaskBtn) {
       deleteTaskBtn.addEventListener('click', () => this.handleDeleteTask());
+    }
+
+    // Open Project Settings Modal
+    const projectSettingsBtn = document.getElementById('btn-project-settings');
+    if (projectSettingsBtn) {
+      projectSettingsBtn.addEventListener('click', () => this.openProjectSettingsModal());
+    }
+
+    // Edit Project Form Submit
+    const editProjectForm = document.getElementById('edit-project-form');
+    if (editProjectForm) {
+      editProjectForm.addEventListener('submit', (e) => this.handleUpdateProject(e));
+    }
+
+    // Delete Project Button
+    const deleteProjectBtn = document.getElementById('delete-project-btn');
+    if (deleteProjectBtn) {
+      deleteProjectBtn.addEventListener('click', () => this.handleDeleteProject());
     }
 
     // Add Comment Form Submit
@@ -621,10 +645,14 @@ const App = {
     }
 
     // Show or hide manage members / settings button if owner
-    const isOwner = project.owner?._id === this.currentUser?._id;
+    const isOwner = (project.owner?._id || project.owner) === this.currentUser?._id;
     const manageBtn = document.getElementById('btn-manage-members');
     if (manageBtn) {
       manageBtn.style.display = isOwner ? 'inline-flex' : 'none';
+    }
+    const settingsBtn = document.getElementById('btn-project-settings');
+    if (settingsBtn) {
+      settingsBtn.style.display = isOwner ? 'inline-flex' : 'none';
     }
   },
 
@@ -1060,6 +1088,89 @@ const App = {
     }
   },
 
+  async openEditTaskModal() {
+    if (!this.activeTaskId) return;
+    const modal = document.getElementById('edit-task-modal');
+    if (!modal) return;
+
+    try {
+      const taskRes = await API.getTask(this.activeTaskId);
+      const task = taskRes.data?.task;
+      if (!task) return;
+
+      document.getElementById('edit-task-title').value = task.title || '';
+      document.getElementById('edit-task-desc').value = task.description || '';
+      document.getElementById('edit-task-priority').value = task.priority || 'medium';
+      document.getElementById('edit-task-status').value = task.status || 'todo';
+
+      if (task.dueDate) {
+        document.getElementById('edit-task-due-date').value = new Date(task.dueDate).toISOString().split('T')[0];
+      } else {
+        document.getElementById('edit-task-due-date').value = '';
+      }
+
+      const assignSelect = document.getElementById('edit-task-assignee');
+      if (assignSelect && this.currentProject) {
+        const members = this.currentProject.members || [];
+        assignSelect.innerHTML = '<option value="">Unassigned</option>' +
+          members.map(m => {
+            const u = m.user;
+            if (!u) return '';
+            const selected = task.assignedTo?._id === u._id ? 'selected' : '';
+            return `<option value="${u._id}" ${selected}>${u.name} (${u.username})</option>`;
+          }).join('');
+      }
+
+      modal.classList.remove('hidden');
+    } catch (err) {
+      this.showToast('Failed to load task for editing: ' + err.message, 'error');
+    }
+  },
+
+  async handleUpdateTask(e) {
+    e.preventDefault();
+    if (!this.activeTaskId) return;
+
+    const title = document.getElementById('edit-task-title').value.trim();
+    const description = document.getElementById('edit-task-desc').value.trim();
+    const priority = document.getElementById('edit-task-priority').value;
+    const status = document.getElementById('edit-task-status').value;
+    const assignedTo = document.getElementById('edit-task-assignee').value || null;
+    const dueDateVal = document.getElementById('edit-task-due-date').value;
+    const dueDate = dueDateVal || null;
+    const submitBtn = document.getElementById('edit-task-submit-btn');
+
+    if (!title) {
+      this.showToast('Task title is required', 'warning');
+      return;
+    }
+
+    Auth.setLoading(submitBtn, true, 'Saving...');
+
+    try {
+      const res = await API.updateTask(this.activeTaskId, {
+        title,
+        description,
+        priority,
+        status,
+        assignedTo,
+        dueDate
+      });
+
+      if (res.success && res.data) {
+        this.showToast('Task updated successfully!', 'success');
+        document.getElementById('edit-task-modal').classList.add('hidden');
+        this.fillTaskDetailModal(res.data.task);
+        this.updateTaskCardDOM(res.data.task);
+        this.updateProjectStatsDOM();
+      }
+    } catch (err) {
+      this.showToast('Failed to update task: ' + err.message, 'error');
+    } finally {
+      Auth.setLoading(submitBtn, false, 'Save Changes');
+    }
+  },
+
   // ----------------------------------------------------
   // PROJECT MEMBERS MANAGEMENT MODAL
   // ----------------------------------------------------
@@ -1165,6 +1276,83 @@ const App = {
       this.renderBoardHeader(this.currentProject);
     } catch (err) {
       this.showToast('Failed to remove member: ' + err.message, 'error');
+    }
+  },
+
+  openProjectSettingsModal() {
+    if (!this.currentProject) return;
+    const modal = document.getElementById('project-settings-modal');
+    if (!modal) return;
+
+    document.getElementById('edit-proj-name').value = this.currentProject.name || '';
+    document.getElementById('edit-proj-desc').value = this.currentProject.description || '';
+    document.getElementById('edit-proj-color').value = this.currentProject.color || '#6366f1';
+    document.getElementById('edit-proj-status').value = this.currentProject.status || 'active';
+
+    if (this.currentProject.dueDate) {
+      document.getElementById('edit-proj-due-date').value = new Date(this.currentProject.dueDate).toISOString().split('T')[0];
+    } else {
+      document.getElementById('edit-proj-due-date').value = '';
+    }
+
+    modal.classList.remove('hidden');
+  },
+
+  async handleUpdateProject(e) {
+    e.preventDefault();
+    if (!this.currentProject) return;
+
+    const name = document.getElementById('edit-proj-name').value.trim();
+    const description = document.getElementById('edit-proj-desc').value.trim();
+    const color = document.getElementById('edit-proj-color').value;
+    const status = document.getElementById('edit-proj-status').value;
+    const dueDateVal = document.getElementById('edit-proj-due-date').value;
+    const dueDate = dueDateVal || null;
+    const submitBtn = document.getElementById('save-project-btn');
+
+    if (!name) {
+      this.showToast('Project name is required', 'warning');
+      return;
+    }
+
+    Auth.setLoading(submitBtn, true, 'Saving...');
+
+    try {
+      const res = await API.updateProject(this.currentProject._id, {
+        name,
+        description,
+        color,
+        status,
+        dueDate
+      });
+
+      if (res.success && res.data) {
+        this.currentProject = res.data.project;
+        this.showToast('Project updated successfully!', 'success');
+        document.getElementById('project-settings-modal').classList.add('hidden');
+        this.renderBoardHeader(this.currentProject);
+        await this.loadProjects();
+      }
+    } catch (err) {
+      this.showToast('Failed to update project: ' + err.message, 'error');
+    } finally {
+      Auth.setLoading(submitBtn, false, 'Save Changes');
+    }
+  },
+
+  async handleDeleteProject() {
+    if (!this.currentProject) return;
+    if (!confirm(`Are you sure you want to permanently delete "${this.currentProject.name}" and all of its tasks? This action cannot be undone.`)) return;
+
+    try {
+      await API.deleteProject(this.currentProject._id);
+      this.showToast('Project deleted successfully', 'success');
+      document.getElementById('project-settings-modal').classList.add('hidden');
+      this.currentProject = null;
+      await this.loadProjects();
+      this.switchView('projects');
+    } catch (err) {
+      this.showToast('Failed to delete project: ' + err.message, 'error');
     }
   },
 
